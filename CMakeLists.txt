@@ -21,14 +21,15 @@ endif()
 
 
 include_directories(external/glad/include)
+include_directories(includes/glm)
 file(
     GLOB_RECURSE
     source_files
     external/*.[ch]pp
     src/*.[ch]pp
+    includes/*.hpp
     )
 add_executable(ray-tracing-tutorial ${source_files})
-
 
 if(UNIX)
 target_link_libraries(ray-tracing-tutorial glfw dl -static-libstdc++)
