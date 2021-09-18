@@ -147,7 +147,7 @@ void draw_data()
 	glClear(GL_COLOR_BUFFER_BIT);
 
 
-
+	float time = glfwGetTime();
 
 	// ******************************** //
 	// Draw data
@@ -158,13 +158,17 @@ void draw_data()
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, -5.0f));
 	model = glm::rotate(model, 3.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 
-	glm::vec3 camera_center = { 0.0f, 0.0f, 0.0f };
-	float time = glfwGetTime();
-	glm::vec3 light_pos = { 10 * sin(time), 0.0f, 10.0f * cos(time) };
+	glm::vec3 camera_center = { 0.0f, 0.1f * cos(time), 0.0f };
+	auto view = glm::mat4(1.0f);
+	view = glm::translate(view, camera_center);
+	//view = glm::rotate(view, time, glm::vec3(1.0f, 0.0f, 0.0f));
+	
+	glm::vec3 light_pos = { 10.0f * sin(time), 0.0f, 10.0f * cos(time) };
 
 	glUseProgram(shader_program);
 	glBindVertexArray(vao);
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection"), 1, GL_FALSE, &projection[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(shader_program, "view"), 1, GL_FALSE, &view[0][0]);
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, "model"), 1, GL_FALSE, &model[0][0]);
 
 	glUniform1f(glGetUniformLocation(shader_program, "max_depth"), 100.0f);
