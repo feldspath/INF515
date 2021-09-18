@@ -173,8 +173,6 @@ void draw_data()
 	glUniform3fv(glGetUniformLocation(shader_program, "light_pos"), 1, &light_pos[0]);
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection_inverse"), 1, GL_FALSE, &projection_inverse[0][0]);
 
-
-
 	// Draw call
 	glDrawElements(GL_TRIANGLES, 12*3, GL_UNSIGNED_INT, 0);
 

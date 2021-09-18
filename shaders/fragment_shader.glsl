@@ -14,6 +14,7 @@ uniform int height;
 float threshold = 0.01f;
 vec3 sphere_center = vec3(0.0f, 0.0f, -5.0f);
 float sphere_radius = 0.5f;
+vec2 torus_params = vec2(0.3f, 0.1f);
 
 vec3 camera_direction(vec2 screen_pos) {
     return normalize(vec3(projection_inverse*vec4(screen_pos, -1.0f, 1.0f)));
@@ -21,6 +22,11 @@ vec3 camera_direction(vec2 screen_pos) {
 
 float sphere_sdf(vec3 pos) {
     return length(pos - sphere_center) - sphere_radius;
+}
+
+float torus_sdf(vec3 pos) {
+    vec2 q = vec2(length(pos.xz- sphere_center.xz)-torus_params.x,pos.y-sphere_center.y);
+    return length(q)-torus_params.y;
 }
 
 float sphere_intersection(vec3 start_pos, vec3 direction, float max_distance) {
