@@ -23,21 +23,36 @@ float sphere_sdf(vec3 pos) {
     return length(pos - sphere_center) - sphere_radius;
 }
 
+float sphere_intersection(vec3 start_pos, vec3 direction, float max_distance) {
+  float distance;
+  vec3 current_pos = start_pos;
+  int iter = 0;
+  do {
+      distance = sphere_sdf(current_pos);
+      current_pos = current_pos + direction * distance;
+      if (distance < threshold) {
+          return length(current_pos - start_pos);
+      }
+      iter++;
+  } while (dot(current_pos - start_pos, current_pos - start_pos) < max_distance*max_distance && iter < 100);
+  return max_distance;
+}
+
 void main()
 {
     vec3 direction = camera_direction(2* vec2(gl_FragCoord.x/width, gl_FragCoord.y/height) - 1);
-    float distance;
-    vec3 current_pos = camera_center;
-    int iter = 0;
-
-    do {
-        distance = sphere_sdf(current_pos);
-        current_pos = current_pos + direction * distance;
-        if (distance < threshold) {
-            FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-            return;
-        }
-        iter++;
-    } while (dot(current_pos - camera_center, current_pos - camera_center) < max_depth*max_depth && iter < 100);
-    discard;
+    float sphere_distance = sphere_intersection(camera_center, direction, max_depth);
+    if (sphere_distance < max_depth) {
+      vec3 sphere_intercept = camera_center + sphere_distance * direction;
+      float light_distance = sphere_intersection(sphere_intercept, normalize(light_pos - sphere_intercept), 10.0f);
+      FragColor = vec4(light_distance/10.0f, 0.0f, 0.0f, 1.0f);
+      return;
+      if (light_distance > length(light_pos - sphere_intercept)) {
+          FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+      } else {
+          FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+      }
+    } else {
+      discard;
+    }
 }

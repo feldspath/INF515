@@ -159,6 +159,7 @@ void draw_data()
 	model = glm::rotate(model, 3.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 
 	glm::vec3 camera_center = {0.0f, 0.0f, 0.0f};
+	glm::vec3 light_pos = { 0.0f, 0.0f, 0.0f };
 
 	glUseProgram(shader_program);
 	glBindVertexArray(vao);
@@ -169,6 +170,7 @@ void draw_data()
 	glUniform1i(glGetUniformLocation(shader_program, "width"), 800);
 	glUniform1i(glGetUniformLocation(shader_program, "height"), 600);
 	glUniform3fv(glGetUniformLocation(shader_program, "camera_center"), 1, &camera_center[0]);
+	glUniform3fv(glGetUniformLocation(shader_program, "light_pos"), 1, &light_pos[0]);
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection_inverse"), 1, GL_FALSE, &projection_inverse[0][0]);
 
 
