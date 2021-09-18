@@ -108,7 +108,7 @@ void load_data()
 {
 	GLuint vbo = 0;
 	GLuint ebo = 0;
-	
+
 	glGenBuffers(1, &vbo);
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &ebo);
@@ -124,9 +124,9 @@ void load_data()
 
 	// *** Set shader attributes	
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), nullptr);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
 
-	
+
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -146,7 +146,7 @@ void draw_data()
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	
+
 
 
 	// ******************************** //
@@ -158,8 +158,9 @@ void draw_data()
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, -5.0f));
 	model = glm::rotate(model, 3.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 
-	glm::vec3 camera_center = {0.0f, 0.0f, 0.0f};
-	glm::vec3 light_pos = { 0.0f, 0.0f, 0.0f };
+	glm::vec3 camera_center = { 0.0f, 0.0f, 0.0f };
+	float time = glfwGetTime();
+	glm::vec3 light_pos = { 10 * sin(time), 0.0f, 10.0f * cos(time) };
 
 	glUseProgram(shader_program);
 	glBindVertexArray(vao);
@@ -174,7 +175,7 @@ void draw_data()
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection_inverse"), 1, GL_FALSE, &projection_inverse[0][0]);
 
 	// Draw call
-	glDrawElements(GL_TRIANGLES, 12*3, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, 12 * 3, GL_UNSIGNED_INT, 0);
 
 	glBindVertexArray(0);
 	glUseProgram(0);
