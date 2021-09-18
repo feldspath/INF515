@@ -136,7 +136,8 @@ void draw_data() {
     auto projection_inverse = glm::inverse(projection);
     auto model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 0.0f, -5.0f));
-    model = glm::rotate(model, 3.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, 1.5f, glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::scale(model, glm::vec3(1.5f));
 
     glm::vec3 camera_center = {0.0f, 0.1f * cos(time), 0.0f};
     auto view = glm::mat4(1.0f);

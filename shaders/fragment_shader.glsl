@@ -14,7 +14,7 @@ uniform int height;
 float intersection_threshold = 0.001f;
 float surface_threshold = intersection_threshold * 1.01;
 vec3 sphere_center = vec3(model * vec4(0.0f, 0.0f, 0.0f, 1.0f));
-float sphere_radius = 0.5f;
+float sphere_radius = length(model * vec4(0.5f, 0.0f, 0.0f, 0.0f));
 vec2 torus_params = vec2(0.3f, 0.1f);
 
 vec3 color = vec3(1.0, 0.0, 0.0);
