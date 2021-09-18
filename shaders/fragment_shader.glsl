@@ -23,6 +23,10 @@ float sphere_sdf(vec3 pos) {
     return length(pos - sphere_center) - sphere_radius;
 }
 
+vec3 sphere_normal(vec3 pos) {
+    return normalize(pos - sphere_center);
+}
+
 float sphere_intersection(vec3 start_pos, vec3 direction, float max_distance) {
   float distance;
   vec3 current_pos = start_pos;
@@ -44,9 +48,9 @@ void main()
     float sphere_distance = sphere_intersection(camera_center, direction, max_depth);
     if (sphere_distance < max_depth) {
       vec3 sphere_intercept = camera_center + sphere_distance * direction;
-      float light_distance = sphere_intersection(sphere_intercept, normalize(light_pos - sphere_intercept), 10.0f);
-      FragColor = vec4(light_distance/10.0f, 0.0f, 0.0f, 1.0f);
-      return;
+      sphere_intercept += sphere_normal(sphere_intercept) * (threshold * 1.01-sphere_sdf(sphere_intercept));
+      float light_distance = sphere_intersection(sphere_intercept, normalize(light_pos - sphere_intercept), 30.0f);
+
       if (light_distance > length(light_pos - sphere_intercept)) {
           FragColor = vec4(1.0, 0.0, 0.0, 1.0);
       } else {
