@@ -16,6 +16,7 @@ float intersection_threshold = 0.001f;
 float surface_threshold = intersection_threshold * 1.01;
 vec3 sphere_center = vec3(model * vec4(0.0f, 0.0f, 0.0f, 1.0f));
 float sphere_radius = 0.5f;
+vec2 torus_params = vec2(0.3f, 0.1f);
 
 vec3 color = vec3(1.0, 0.0, 0.0);
 float diffuse = 0.5;
@@ -33,6 +34,11 @@ float sphere_sdf(vec3 pos) {
 
 vec3 sphere_normal(vec3 pos) {
     return normalize(pos - sphere_center);
+}
+
+float torus_sdf(vec3 pos) {
+    vec2 q = vec2(length(pos.xz- sphere_center.xz)-torus_params.x,pos.y-sphere_center.y);
+    return length(q)-torus_params.y;
 }
 
 float sphere_intersection(vec3 start_pos, vec3 direction, float max_distance) {
