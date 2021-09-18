@@ -153,14 +153,26 @@ void draw_data()
 	// Draw data
 	// ******************************** //
 	auto projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+	auto projection_inverse = glm::inverse(projection);
 	auto model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(0.0f, 0.0f, -5.0f));
 	model = glm::rotate(model, 3.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+
+	glm::vec3 camera_center = {0.0f, 0.0f, 0.0f};
 
 	glUseProgram(shader_program);
 	glBindVertexArray(vao);
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection"), 1, GL_FALSE, &projection[0][0]);
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, "model"), 1, GL_FALSE, &model[0][0]);
+
+	glUniform1f(glGetUniformLocation(shader_program, "max_depth"), 100.0f);
+	glUniform1i(glGetUniformLocation(shader_program, "width"), 800);
+	glUniform1i(glGetUniformLocation(shader_program, "height"), 600);
+	glUniform3fv(glGetUniformLocation(shader_program, "camera_center"), 1, &camera_center[0]);
+	glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection_inverse"), 1, GL_FALSE, &projection_inverse[0][0]);
+
+
+
 	// Draw call
 	glDrawElements(GL_TRIANGLES, 12*3, GL_UNSIGNED_INT, 0);
 

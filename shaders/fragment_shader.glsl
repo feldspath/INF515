@@ -2,7 +2,41 @@
 
 out vec4 FragColor;
 
+uniform mat4 perspective_inverse;
+uniform vec3 camera_center;
+// uniform vec3 sphere_center;
+// uniform float sphere_radius;
+uniform float max_depth;
+uniform int width;
+uniform int height;
+
+float threshold = 0.01f;
+vec3 sphere_center = vec3(0.0f, 0.0f, -5.0f);
+float sphere_radius = 0.5f;
+
+vec3 camera_direction(vec2 screen_pos) {
+    return normalize(vec3(perspective_inverse*vec4(screen_pos, -1.0f, 1.0f)));
+}
+
+float sphere_sdf(vec3 pos) {
+    return length(pos - sphere_center) - sphere_radius;
+}
+
 void main()
 {
-    FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    vec3 direction = camera_direction(vec2(gl_FragCoord.x/width, gl_FragCoord.y/height));
+
+    float distance;
+    vec3 current_pos = camera_center;
+
+    do {
+        distance = sphere_sdf(current_pos);
+        current_pos + direction * distance;
+        if (distance < threshold) {
+            FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+            return;
+        }
+    } while (dot(current_pos - camera_center, current_pos - camera_center) < max_depth*max_depth);
+    FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+
 }
