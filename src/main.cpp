@@ -71,10 +71,6 @@ void draw_data();             // Drawing calls within the animation loop
 /** Main function, call the general functions and setup the animation loop */
 int main()
 {
-	std::cout << sizeof(vec3) << '\n';
-	for (auto vec : cube_primitive_vertices) {
-		std::cout << vec << '\n';
-	}
 	std::cout << "*** Init GLFW ***" << std::endl;
 	glfw_init();
 
@@ -150,16 +146,21 @@ void draw_data()
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 
-	glm::mat4 projection;
-	projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+	
 
 
 	// ******************************** //
 	// Draw data
 	// ******************************** //
-	glUseProgram(shader_program);
+	auto projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+	auto model = glm::mat4(1.0f);
+	model = glm::translate(model, glm::vec3(0.0f, 0.0f, -5.0f));
+	model = glm::rotate(model, 3.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 
+	glUseProgram(shader_program);
+	glBindVertexArray(vao);
 	glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection"), 1, GL_FALSE, &projection[0][0]);
+	glUniformMatrix4fv(glGetUniformLocation(shader_program, "model"), 1, GL_FALSE, &model[0][0]);
 	// Draw call
 	glDrawElements(GL_TRIANGLES, 12*3, GL_UNSIGNED_INT, 0);
 
