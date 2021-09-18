@@ -119,52 +119,50 @@ void load_data() {
 }
 
 /** Function called within the animation loop.
-	Setup uniform variables and drawing calls  */
-void draw_data()
-{
-	// ******************************** //
-	// Clear screen
-	// ******************************** //
-	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+        Setup uniform variables and drawing calls  */
+void draw_data() {
+    // ******************************** //
+    // Clear screen
+    // ******************************** //
+    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
 
+    float time = glfwGetTime();
 
-	float time = glfwGetTime();
+    // ******************************** //
+    // Draw data
+    // ******************************** //
+    auto projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+    auto projection_inverse = glm::inverse(projection);
+    auto model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 0.0f, -5.0f));
+    model = glm::rotate(model, 3.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 
-	// ******************************** //
-	// Draw data
-	// ******************************** //
-	auto projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
-	auto projection_inverse = glm::inverse(projection);
-	auto model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(0.0f, 0.0f, -5.0f));
-	model = glm::rotate(model, 3.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::vec3 camera_center = {0.0f, 0.1f * cos(time), 0.0f};
+    auto view = glm::mat4(1.0f);
+    view = glm::translate(view, camera_center);
+    // view = glm::rotate(view, time, glm::vec3(1.0f, 0.0f, 0.0f));
 
-	glm::vec3 camera_center = { 0.0f, 0.1f * cos(time), 0.0f };
-	auto view = glm::mat4(1.0f);
-	view = glm::translate(view, camera_center);
-	//view = glm::rotate(view, time, glm::vec3(1.0f, 0.0f, 0.0f));
-	
-	glm::vec3 light_pos = { 10.0f * sin(time), 0.0f, 10.0f * cos(time) };
+    glm::vec3 light_pos = {10.0f * sin(time), 0.0f, 10.0f * cos(time)};
 
-	glUseProgram(shader_program);
-	glBindVertexArray(vao);
-	glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection"), 1, GL_FALSE, &projection[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(shader_program, "view"), 1, GL_FALSE, &view[0][0]);
-	glUniformMatrix4fv(glGetUniformLocation(shader_program, "model"), 1, GL_FALSE, &model[0][0]);
+    glUseProgram(shader_program);
+    glBindVertexArray(vao);
+    glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection"), 1, GL_FALSE,
+                       &projection[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(shader_program, "view"), 1, GL_FALSE, &view[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(shader_program, "model"), 1, GL_FALSE, &model[0][0]);
 
-	glUniform1f(glGetUniformLocation(shader_program, "max_depth"), 100.0f);
-	glUniform1i(glGetUniformLocation(shader_program, "width"), 800);
-	glUniform1i(glGetUniformLocation(shader_program, "height"), 600);
-	glUniform3fv(glGetUniformLocation(shader_program, "camera_center"), 1, &camera_center[0]);
-	glUniform3fv(glGetUniformLocation(shader_program, "light_pos"), 1, &light_pos[0]);
-	glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection_inverse"), 1, GL_FALSE, &projection_inverse[0][0]);
+    glUniform1f(glGetUniformLocation(shader_program, "max_depth"), 100.0f);
+    glUniform1i(glGetUniformLocation(shader_program, "width"), 800);
+    glUniform1i(glGetUniformLocation(shader_program, "height"), 600);
+    glUniform3fv(glGetUniformLocation(shader_program, "camera_center"), 1, &camera_center[0]);
+    glUniform3fv(glGetUniformLocation(shader_program, "light_pos"), 1, &light_pos[0]);
+    glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection_inverse"), 1, GL_FALSE,
+                       &projection_inverse[0][0]);
 
+    // Draw call
+    glDrawElements(GL_TRIANGLES, 12 * 3, GL_UNSIGNED_INT, 0);
 
-
-	// Draw call
-	glDrawElements(GL_TRIANGLES, 12 * 3, GL_UNSIGNED_INT, 0);
-
-	glBindVertexArray(0);
-	glUseProgram(0);
+    glBindVertexArray(0);
+    glUseProgram(0);
 }
