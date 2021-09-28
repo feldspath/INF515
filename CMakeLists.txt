@@ -6,7 +6,7 @@ add_definitions(-DIMGUI_IMPL_OPENGL_LOADER_GLAD)
 
 # Add G++ Warning on Unix
 if(UNIX)
-add_definitions(-g -O2 -std=c++11 -Wall -Wextra)
+add_definitions(-g -O2 -std=c++17 -Wall -Wextra)
     set(CMAKE_CXX_COMPILER g++)
     find_package(glfw3 REQUIRED) #Expect glfw3 to be installed on your system
 endif()
