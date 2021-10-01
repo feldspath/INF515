@@ -23,19 +23,19 @@ GLuint shader_program = 0;    // Id of the shader used to draw the data (only on
 GLuint vao = 0;               // Set of attributes to draw the data (only one attribute)
 int counter_drawing_loop = 0; // Counter to handle the animation
 
-auto sphere_position = glm::vec3(0.0f, 0.0f, 0.0f);
+auto sphere_position = glm::vec3(0.0f, 0.0f, -5.0f);
 auto sphere_radius = 0.2f;
 
 float sdf(glm::vec3 position) { return glm::distance(position, sphere_position) - sphere_radius; }
 
 class Block {
 private:
-    std::array<int, BLOCK_VOXELS * BLOCK_VOXELS * BLOCK_VOXELS / 4> data;
+    std::array<unsigned int, BLOCK_VOXELS * BLOCK_VOXELS * BLOCK_VOXELS / 4> m_voxels;
 
 public:
-    Block() : data() {}
+    Block() : m_voxels() {}
 
-    Block(glm::vec3 origin, float block_size) : data() {
+    Block(glm::vec3 origin, float block_size) : m_voxels() {
         auto sample_offset = glm::vec3(1.0f) * (block_size / BLOCK_VOXELS / 2);
         auto voxel_size = block_size / BLOCK_VOXELS;
         unsigned int temp = 0;
@@ -57,8 +57,8 @@ public:
         }
     }
 
-    int &int_at(int i, int j, int k) {
-        return data[(i * BLOCK_VOXELS * BLOCK_VOXELS + j * BLOCK_VOXELS + k) / 4];
+    unsigned int &int_at(int i, int j, int k) {
+        return m_voxels[(i * BLOCK_VOXELS * BLOCK_VOXELS + j * BLOCK_VOXELS + k) / 4];
     }
 
     unsigned char char_at(int i, int j, int k) {
@@ -66,12 +66,14 @@ public:
         unsigned char value = (temp >> 8 * (k % 4)) & 0xff;
         return value;
     }
+
+    const unsigned int *data() { return m_voxels.data(); }
 };
 
 void generate_distance_texture(std::vector<Block> &blocks, glm::vec3 origin, int nb_blocks,
-                               float size) {
+                               float volume_size) {
     blocks.resize(nb_blocks * nb_blocks * nb_blocks);
-    auto block_size = size / nb_blocks;
+    auto block_size = volume_size / nb_blocks;
     for (int i = 0; i < nb_blocks; ++i) {
         for (int j = 0; j < nb_blocks; ++j) {
             for (int k = 0; k < nb_blocks; ++k) {
@@ -98,19 +100,22 @@ std::array<int, 12 * 3> cube_primitive_indices = {0, 2, 1, 0, 3, 2, 1, 2, 5, 2, 
 void load_data(); // Load and send data to the GPU once
 void draw_data(); // Drawing calls within the animation loop
 
+glm::vec3 block_origin = glm::vec3(-0.5f) + sphere_position;
+std::vector<Block> blocks;
+float volume_size = 1.0f;
+int nb_blocks = 5;
+
 /** Main function, call the general functions and setup the animation loop */
 int main() {
-    assert(sizeof(Block) == 4 * 128);
+    generate_distance_texture(blocks, block_origin, nb_blocks, volume_size);
 
-    Block b(glm::vec3(-0.5f), 1.0f);
-
-    for (int j = 0; j < BLOCK_VOXELS; ++j) {
-        for (int k = 0; k < BLOCK_VOXELS; ++k) {
-            unsigned char value = b.char_at(4, j, k);
-            std::cout << (float)value / 32.0f - 4.0f << '\t';
-        }
-        std::cout << '\n';
-    }
+    // for (int j = 0; j < BLOCK_VOXELS; ++j) {
+    //    for (int k = 0; k < BLOCK_VOXELS; ++k) {
+    //        unsigned char value = block.char_at(4, j, k);
+    //        std::cout << (float)value / 32.0f - 4.0f << '\t';
+    //    }
+    //    std::cout << '\n';
+    //}
 
     std::cout << "*** Init GLFW ***" << std::endl;
     glfw_init();
@@ -215,6 +220,12 @@ void draw_data() {
     glUniform3fv(glGetUniformLocation(shader_program, "light_pos"), 1, &light_pos[0]);
     glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection_inverse"), 1, GL_FALSE,
                        &projection_inverse[0][0]);
+
+    glUniform1uiv(glGetUniformLocation(shader_program, "sdf_samples"), 128,
+                  (unsigned int *)blocks.data());
+    glUniform3fv(glGetUniformLocation(shader_program, "volume_origin"), 1, &block_origin[0]);
+    glUniform1f(glGetUniformLocation(shader_program, "volume_size"), volume_size);
+    glUniform1f(glGetUniformLocation(shader_program, "nb_blocks"), nb_blocks);
 
     // Draw call
     glDrawElements(GL_TRIANGLES, cube_primitive_indices.size(), GL_UNSIGNED_INT, 0);
