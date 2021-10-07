@@ -1,52 +1,39 @@
 #version 330 core
 
 out vec4 FragColor;
+in vec4 world_pos;
 
+// Matrices
 uniform mat4 model;
 uniform mat4 projection_inverse;
 uniform vec3 camera_center;
 uniform vec3 light_pos;
-// uniform float sphere_radius;
+
+// Sphere marching parameters
 uniform float max_depth;
 uniform int width;
 uniform int height;
-
-float intersection_threshold = 0.001f;
+float intersection_threshold = 0.2;
 float surface_threshold = intersection_threshold * 1.01;
 
+// Material
 vec3 color = vec3(1.0, 0.0, 0.0);
 float diffuse = 0.5;
 float ambient = 0.05;
 float specular = 0.5;
 float roughness = 16;
 
-uniform uint sdf_samples[128 * 125];
+// sdf texture & parameters
+uniform sampler3D sdf_texture;
 uniform vec3 volume_origin;
 uniform float volume_size;
-uniform int nb_blocks;
-
-float block_size = volume_size / nb_blocks;
-float voxel_size = block_size / 8;
-
-ivec3 ijk_from_pos(vec3 position) {
-    vec3 relative_pos = position - volume_origin;
-    ivec3 ijk = ivec3(floor(relative_pos / voxel_size));
-    return ijk;
-}
+uniform int nb_texels;
+float voxel_size = volume_size / nb_texels;
 
 float distance_estimate(vec3 position) {
-    ivec3 ijk = ijk_from_pos(position);
-    int i = ijk.x;
-    int j = ijk.y;
-    int k = ijk.z;
-
-    ivec3 block_index = ijk / 8;
-    int offset = (block_index.x * 5 * 5 + block_index.y * 5 + block_index.z) * 128;
-
-    ijk = ijk % 8;
-    uint temp = sdf_samples[offset + (i * 8 * 8 + j * 8 + k) / 4];
-    float value = float((temp >> 8 * (k % 4)) & uint(0xff));
-    return value / 32.0 - 4.0;
+    vec3 tex_coord = (position - volume_origin) / volume_size;
+    float value = texture(sdf_texture, position).r;
+    return value * 8.0 - 4.0;
 }
 
 // vec3 normal_estimate(vec3 position) {}
@@ -67,7 +54,7 @@ float sphere_intersection(vec3 start_pos, vec3 direction, float max_distance) {
         }
         iter++;
     } while (dot(current_pos - start_pos, current_pos - start_pos) < max_distance * max_distance &&
-             iter < 100);
+             iter < 300);
     return max_distance;
 }
 
@@ -75,6 +62,16 @@ void main() {
     vec3 direction =
         camera_direction(2 * vec2(-gl_FragCoord.x / width, -gl_FragCoord.y / height) + vec2(1.0f));
     float sphere_distance = sphere_intersection(camera_center, direction, max_depth);
+    float sample = texture(sdf_texture, vec3(world_pos.x + 0.5f, world_pos.y + 0.5f, 0.5f)).r;
+    vec3 current_pos = camera_center;
+    float dist;
+    for (int i = 0; i < 0; i++) {
+        dist = distance_estimate(current_pos);
+        current_pos = current_pos + direction * dist;
+    }
+    dist = distance_estimate(current_pos);
+    FragColor = vec4(dist - 0.55, 0.0f, 0.0f, 1.0f);
+    return;
     if (sphere_distance >= max_depth) {
         discard;
     }
