@@ -84,9 +84,9 @@ public:
         glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
         // Wrapping parameters
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
         float borderColor[] = {0.5f / 8.0f + 0.5f, 0.0f, 0.0f, 1.0f};
         glTexParameterfv(GL_TEXTURE_3D, GL_TEXTURE_BORDER_COLOR, borderColor);
@@ -129,7 +129,7 @@ void draw_data(); // Drawing calls within the animation loop
 glm::vec3 block_origin = glm::vec3(-0.5f) + sphere_position;
 Block block;
 float volume_size = 1.0f;
-int nb_texels = 16;
+int nb_texels = 64;
 
 /** Main function, call the general functions and setup the animation loop */
 int main() {
@@ -193,7 +193,7 @@ void load_data() {
     block = Block(block_origin, volume_size, nb_texels);
     block.generate_texture();
     block.send_texture();
-    block.print_slice(8);
+    // block.print_slice(0);
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_FRONT);
@@ -222,9 +222,8 @@ void draw_data() {
     // model = glm::scale(model, glm::vec3(1.5f));
 
     // glm::vec3 camera_center = {0.0f, 0.1f * cos(time), 0.0f};
-    glm::vec3 camera_center = {0.0f, 0.0f, 0.0f};
-    auto view = glm::mat4(1.0f);
-    view = glm::translate(view, camera_center);
+    glm::vec3 camera_center = {0.0f, 0.0f, (cos(time) + 1.0f)};
+    auto view = glm::lookAt(camera_center, sphere_position, glm::vec3(0.0f, 1.0f, 0.0f));
     // view = glm::rotate(view, time, glm::vec3(1.0f, 0.0f, 0.0f));
 
     glm::vec3 light_pos = {10.0f * sin(time), 0.0f, 10.0f * cos(time)};

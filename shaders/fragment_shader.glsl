@@ -13,7 +13,7 @@ uniform vec3 light_pos;
 uniform float max_depth;
 uniform int width;
 uniform int height;
-float intersection_threshold = 0.2;
+float intersection_threshold = 0.001;
 float surface_threshold = intersection_threshold * 1.01;
 
 // Material
@@ -31,6 +31,7 @@ uniform int nb_texels;
 float voxel_size = volume_size / nb_texels;
 
 float distance_estimate(vec3 position) {
+    position = position + vec3(0.5f, 0.5, 0.5);
     vec3 tex_coord = (position - volume_origin) / volume_size;
     float value = texture(sdf_texture, position).r;
     return value * 8.0 - 4.0;
@@ -61,17 +62,7 @@ float sphere_intersection(vec3 start_pos, vec3 direction, float max_distance) {
 void main() {
     vec3 direction =
         camera_direction(2 * vec2(-gl_FragCoord.x / width, -gl_FragCoord.y / height) + vec2(1.0f));
-    float sphere_distance = sphere_intersection(camera_center, direction, max_depth);
-    float sample = texture(sdf_texture, vec3(world_pos.x + 0.5f, world_pos.y + 0.5f, 0.5f)).r;
-    vec3 current_pos = camera_center;
-    float dist;
-    for (int i = 0; i < 0; i++) {
-        dist = distance_estimate(current_pos);
-        current_pos = current_pos + direction * dist;
-    }
-    dist = distance_estimate(current_pos);
-    FragColor = vec4(dist - 0.55, 0.0f, 0.0f, 1.0f);
-    return;
+    float sphere_distance = sphere_intersection(camera_center, direction, 100.0f);
     if (sphere_distance >= max_depth) {
         discard;
     }
