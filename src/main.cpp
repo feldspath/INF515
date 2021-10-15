@@ -110,6 +110,12 @@ public:
     }
 };
 
+std::array<glm::vec3, 4> quad_primitive_vertices = {
+    glm::vec3({-1.0f, -1.0f, 0.0f}), glm::vec3({-1.0f, 1.0f, 0.0f}), glm::vec3({1.0f, -1.0f, 0.0f}),
+    glm::vec3({1.0f, 1.0f, 0.0f})};
+
+std::array<int, 2 * 3> quad_primitive_indices = {0, 1, 2, 1, 3, 2};
+
 std::array<glm::vec3, 8> cube_primitive_vertices = {
     glm::vec3({-0.5f, -0.5f, -0.5f}), glm::vec3({0.5f, -0.5f, -0.5f}),
     glm::vec3({0.5f, -0.5f, 0.5f}),   glm::vec3({-0.5f, -0.5f, 0.5f}),
@@ -129,7 +135,7 @@ void draw_data(); // Drawing calls within the animation loop
 glm::vec3 block_origin = glm::vec3(-0.5f) + sphere_position;
 Block block;
 float volume_size = 1.0f;
-int nb_texels = 64;
+int nb_texels = 512;
 
 /** Main function, call the general functions and setup the animation loop */
 int main() {
@@ -153,11 +159,20 @@ int main() {
         create_shader_program("shaders/vertex_shader.glsl", "shaders/fragment_shader.glsl");
 
     std::cout << "*** Start GLFW loop ***" << std::endl;
+    int count = 0;
+    double start_time = glfwGetTime();
     while (!glfwWindowShouldClose(window)) {
         draw_data();
 
         glfwSwapBuffers(window);
         glfwPollEvents();
+        ++count;
+        if (count > 100) {
+            count = 0;
+            double end_time = glfwGetTime();
+            std::cout << "Current fps: " << 100 / (end_time - start_time) << '\n';
+            start_time = end_time;
+        }
     }
     std::cout << "*** Terminate GLFW loop ***" << std::endl;
 }
@@ -175,12 +190,12 @@ void load_data() {
 
     // *** Send data on the GPU
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, cube_primitive_vertices.size() * sizeof(glm::vec3),
-                 cube_primitive_vertices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, quad_primitive_vertices.size() * sizeof(glm::vec3),
+                 quad_primitive_vertices.data(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, cube_primitive_indices.size() * sizeof(int),
-                 cube_primitive_indices.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, quad_primitive_indices.size() * sizeof(int),
+                 quad_primitive_indices.data(), GL_STATIC_DRAW);
 
     // *** Set shader attributes
     glEnableVertexAttribArray(0);
@@ -216,15 +231,8 @@ void draw_data() {
     // ******************************** //
     auto projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
     auto projection_inverse = glm::inverse(projection);
-    auto model = glm::mat4(1.0f);
-    model = glm::translate(model, sphere_position);
-    // model = glm::rotate(model, 1.5f, glm::vec3(1.0f, 0.0f, 0.0f));
-    // model = glm::scale(model, glm::vec3(1.5f));
-
-    // glm::vec3 camera_center = {0.0f, 0.1f * cos(time), 0.0f};
-    glm::vec3 camera_center = {0.0f, 0.0f, (cos(time) + 1.0f)};
-    auto view = glm::lookAt(camera_center, sphere_position, glm::vec3(0.0f, 1.0f, 0.0f));
-    // view = glm::rotate(view, time, glm::vec3(1.0f, 0.0f, 0.0f));
+    // glm::vec3 camera_center = {0.0f, 0.0f, (cos(time) + 1.0f)};
+    glm::vec3 camera_center = {0.0f, 0.0f, 1.0f};
 
     glm::vec3 light_pos = {10.0f * sin(time), 0.0f, 10.0f * cos(time)};
 
@@ -232,16 +240,14 @@ void draw_data() {
     glBindVertexArray(vao);
     glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection"), 1, GL_FALSE,
                        &projection[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(shader_program, "view"), 1, GL_FALSE, &view[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(shader_program, "model"), 1, GL_FALSE, &model[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection_inverse"), 1, GL_FALSE,
+                       &projection_inverse[0][0]);
 
     glUniform1f(glGetUniformLocation(shader_program, "max_depth"), 100.0f);
     glUniform1i(glGetUniformLocation(shader_program, "width"), 800);
     glUniform1i(glGetUniformLocation(shader_program, "height"), 600);
     glUniform3fv(glGetUniformLocation(shader_program, "camera_center"), 1, &camera_center[0]);
     glUniform3fv(glGetUniformLocation(shader_program, "light_pos"), 1, &light_pos[0]);
-    glUniformMatrix4fv(glGetUniformLocation(shader_program, "projection_inverse"), 1, GL_FALSE,
-                       &projection_inverse[0][0]);
 
     // Pass texture to shader
     block.bind_texture();
@@ -251,7 +257,7 @@ void draw_data() {
     glUniform1f(glGetUniformLocation(shader_program, "nb_texels"), nb_texels);
 
     // Draw call
-    glDrawElements(GL_TRIANGLES, cube_primitive_indices.size(), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, quad_primitive_indices.size(), GL_UNSIGNED_INT, 0);
 
     glBindVertexArray(0);
     glUseProgram(0);
