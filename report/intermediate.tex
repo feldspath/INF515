@@ -63,13 +63,13 @@ As a first preliminary work, we decided to implement a full sphere tracing pipel
 \begin{figure}
     \begin{subfigure}{.5\linewidth}
         \centering
-        %\includegraphics[width=.9\linewidth]{figures/sphere-tracing1.png}
+        \includegraphics[width=.9\linewidth]{figures/ray_marching.JPG}
         \caption{without Phong shading}
         \label{sfig:sphere-tracing1}
     \end{subfigure}%
     \begin{subfigure}{.5\linewidth}
         \centering
-        %\includegraphics[width=.9\linewidth]{figures/sphere-tracing2.png}
+        \includegraphics[width=.9\linewidth]{figures/ray_marching_phong.JPG}
         \caption{with Phong shading}
         \label{sfig:sphere-tracing2}
     \end{subfigure}
@@ -91,22 +91,22 @@ In order to get our hands with these notions, we decided to implement our own SD
     \begin{subfigure}{.3\linewidth}
         \centering
         \includegraphics[width=.9\linewidth]{figures/discretized_sdf_32.JPG}
-        \caption{}
+        \caption{$32^3$}
         \label{sfig:sampled-sphere1}
     \end{subfigure}
     \begin{subfigure}{.3\linewidth}
         \centering
         \includegraphics[width=.9\linewidth]{figures/discretized_sdf_128.JPG}
-        \caption{}
+        \caption{$128^3$}
         \label{sfig:sampled-sphere2}
     \end{subfigure}
     \begin{subfigure}{.3\linewidth}
         \centering
         \includegraphics[width=.9\linewidth]{figures/discretized_sdf_512.JPG}
-        \caption{}
+        \caption{$512^3$}
         \label{sfig:sampled-sphere3}
     \end{subfigure}
-    \caption{Ray traced rendering of a sampled SDF of a sphere}
+    \caption{Ray traced rendering of a sampled SDF of a sphere with increasing texture resolution.}
     \label{fig:sampled-sphere}
 \end{figure}
 
@@ -144,7 +144,6 @@ More precisely, at \textit{High Performance Programming 2021}, Kersten Schuster 
   \caption{where $d_i$ is a sample from the dictionary and $K_i$ satisfies $K_i\leq K$}
   \end{equ}
 
-% Add a 
 In this project, we would like to extend this method to volumetric SDF representations. To do so, we intend to create a coarse \textit{Sparse Voxel Octree} (SVO) with a small maximum depth where each end voxel in the tree (i.e. a voxel that has no children at lower levels) could be represented as a sparse coding of a pretrained dictionary of 3D volumetric textures that could act as samples of the SDFs themselves. This structure would be particularly interesting as it would allow to edit some parts of the volume without having, in practice, to recompute all the values of the decomposition every time for all the voxels of the octree. Indeed, as sphere tracing relies on suitably selected steps along the cast ray. If the structure of the scene changes sufficiently away from the updated voxels, it would not affect the ray casting strategy up to a few marching steps. Moreover, storing the SDF values inside a texture would allow for fast and efficient sampling while avoiding too much cache misses. The proposed strategy is illustrated in figure \ref{fig:sparse-coding-sdf}.
 
 \begin{figure*}[h]
@@ -163,6 +162,8 @@ To address this issue, \cite{takikawa2021nglod} recently proposed to encode SDFs
 As part of this project, we would like to implement a similar solution with a MLP that can be evaluated directly in a \textit{shader}. Moreover, as the scene faces radical changes, we would like to try and dynamically update the parameters of the decoding MLP and test the obtained result against existing solutions.
 
 \section{Generating SDFs: roadmap}
+
+
 
 \addcontentsline{toc}{section}{References}
 \bibliographystyle{plain}
