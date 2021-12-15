@@ -123,7 +123,7 @@ As we can easily infer, the problem lies at the boundary of the sphere where the
 
 As mentioned before, uniformly sampling SDFs as well as storing its scalar (as well as normal vectorial) values imply strong memory usage while not taking into account the structural aspect of the surface in the sampling strategy. To address, such issues, several approaches have been proposed.
 
-\textit{Adaptative signed distance fields} have been introduced in \cite{10.1145/344779.344899} and use octree datastructures to sample the signed distance field at multiple resolutions where more precision is required. The SDF can then be sampled by trilinear interpolation on the finest voxel surrounding the queried sample point. The issue with this octree datastructure is that updating the SDF as well sampling a value from this representation requires to access parts of memory that might very distant from one another, thus triggering consuming cash misses that may slow dramatically the rendering process.
+\textit{Adaptively sampled distance fields} have been introduced in \cite{10.1145/344779.344899} and use octree datastructures to sample the signed distance field at multiple resolutions where more precision is required. The SDF can then be estimated by trilinear interpolation on the finest voxel surrounding the queried sample point. The issue with this octree datastructure is that updating the SDF as well sampling a value from this representation requires to access parts of memory that might very distant from one another, thus triggering consuming cash misses that may slow dramatically the rendering process.
 
 \textit{Hash-based} methods have been introduced in \cite{10.1145/2508363.2508374}, for example. These methods are quite efficient but tailored for \textit{voxel-based} rendering and not ray tracing where we are required to be able to sample the signed distance field everywhere in the accessible. Some \textit{volumetric-based} representations such as \textit{GigaVoxels}\cite{crassin:inria-00345899} provide interesting schemes that we could get inspiration of.
 
@@ -145,7 +145,7 @@ More precisely, at \textit{High Performance Programming 2021}, Kersten Schuster 
   \end{equ}
 
 % Add a 
-In this project, we would like to extend this method to volumetric SDFs representations. To do so, we intend to create a coarse \textit{Sparse Voxel Octree} (SVO) with a small maximum depth where each end voxel in the tree (i.e. a voxel that has no children at lower levels) could be represented as a sparse coding of a pretrained dictionary of 3D volumetric textures that could act as samples of the SDF themselves. This structure would be particularly interesting as it would allow to edit some parts of the volume without having, in practice, to recompute all the values of the decomposition every time for all the voxels of the octree. Indeed, as sphere tracing relies on suitably selected steps along the cast ray. If the structure of the scene changes sufficiently away from the updated voxels, it would not affect the ray casting strategy up to a few marching steps. Moreover, storing the SDF values inside a texture would allow for fast and efficient sampling while avoiding too much cache misses. The proposed strategy is illustrated in figure \ref{fig:sparse-coding-sdf}.
+In this project, we would like to extend this method to volumetric SDF representations. To do so, we intend to create a coarse \textit{Sparse Voxel Octree} (SVO) with a small maximum depth where each end voxel in the tree (i.e. a voxel that has no children at lower levels) could be represented as a sparse coding of a pretrained dictionary of 3D volumetric textures that could act as samples of the SDFs themselves. This structure would be particularly interesting as it would allow to edit some parts of the volume without having, in practice, to recompute all the values of the decomposition every time for all the voxels of the octree. Indeed, as sphere tracing relies on suitably selected steps along the cast ray. If the structure of the scene changes sufficiently away from the updated voxels, it would not affect the ray casting strategy up to a few marching steps. Moreover, storing the SDF values inside a texture would allow for fast and efficient sampling while avoiding too much cache misses. The proposed strategy is illustrated in figure \ref{fig:sparse-coding-sdf}.
 
 \begin{figure*}[h]
     \centering
@@ -160,7 +160,9 @@ Recently, they have been a lot of attempts to represent SDFs as neural networks.
 
 To address this issue, \cite{takikawa2021nglod} recently proposed to encode SDFs as latent representations learned by a small fixed neural network, namely a MLP with a single hidden layer of size $128$. These learned vectors are stored in a \textit{Sparse Voxel Octree} (SVO) and the SDF is sampled by summing the contributions of the features associated to each voxel across each level of the (SVO), applying trilinear interpolation in the sum and decoding it thanks to the aforementioned MLP.
 
-As part of this project, we would like to implement a similar solution with a MLP that can be evaluated directly in a \textit{shader}. Moreover, as the scene faces radical changes, we would like to try and dynamically update the parameters of the decoding MLP and testing the obtained result against existing solutions.
+As part of this project, we would like to implement a similar solution with a MLP that can be evaluated directly in a \textit{shader}. Moreover, as the scene faces radical changes, we would like to try and dynamically update the parameters of the decoding MLP and test the obtained result against existing solutions.
+
+\section{Generating SDFs: roadmap}
 
 \addcontentsline{toc}{section}{References}
 \bibliographystyle{plain}
