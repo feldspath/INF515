@@ -1,6 +1,6 @@
 \documentclass[10pt,a4paper,english, twocolumn]{article}
 
-\usepackage[demo]{graphicx} % This package draws images
+\usepackage{graphicx} % This package draws images
 \usepackage{hyperref} 
 \usepackage{booktabs} % Essential for nice tabs (see https://people.inf.ethz.ch/markusp/teaching/guides/guide-tables.pdf)
 \usepackage{multirow}
@@ -63,13 +63,13 @@ As a first preliminary work, we decided to implement a full sphere tracing pipel
 \begin{figure}
     \begin{subfigure}{.5\linewidth}
         \centering
-        \includegraphics[width=.9\linewidth]{figures/sphere-tracing1.png}
+        %\includegraphics[width=.9\linewidth]{figures/sphere-tracing1.png}
         \caption{without Phong shading}
         \label{sfig:sphere-tracing1}
     \end{subfigure}%
     \begin{subfigure}{.5\linewidth}
         \centering
-        \includegraphics[width=.9\linewidth]{figures/sphere-tracing2.png}
+        %\includegraphics[width=.9\linewidth]{figures/sphere-tracing2.png}
         \caption{with Phong shading}
         \label{sfig:sphere-tracing2}
     \end{subfigure}
@@ -90,19 +90,19 @@ In order to get our hands with these notions, we decided to implement our own SD
 \begin{figure}
     \begin{subfigure}{.33\linewidth}
         \centering
-        \includegraphics[width=.9\linewidth]{figures/sphere-tracing1.png}
+        %\includegraphics[width=.9\linewidth]{figures/sphere-tracing1.png}
         \caption{}
         \label{sfig:sampled-sphere1}
     \end{subfigure}%
     \begin{subfigure}{.33\linewidth}
         \centering
-        \includegraphics[width=.9\linewidth]{figures/sphere-tracing2.png}
+        %\includegraphics[width=.9\linewidth]{figures/sphere-tracing2.png}
         \caption{}
         \label{sfig:sampled-sphere2}
     \end{subfigure}
     \begin{subfigure}{.33\linewidth}
         \centering
-        \includegraphics[width=.9\linewidth]{figures/sphere-tracing2.png}
+        %\includegraphics[width=.9\linewidth]{figures/sphere-tracing2.png}
         \caption{}
         \label{sfig:sampled-sphere3}
     \end{subfigure}
@@ -145,18 +145,22 @@ More precisely, at \textit{High Performance Programming 2021}, Kersten Schuster 
   \end{equ}
 
 % Add a 
-In this project, we would like to extend this method to volumetric SDFs representations. To do so, we intend to create a coarse \textit{Sparse Voxel Octree} (SVO) with a small maximum depth where each end voxel in the tree (i.e. a voxel that has no children at lower levels) could be represented as a sparse coding of a pretrained dictionary of 3D volumetric textures that could act as samples of the SDF themselves. This structure would be particularly interesting as it would allow to edit some parts of the volume without having, in practice, to recompute all the values of the decomposition every time for all the voxels of the octree. Indeed, as sphere tracing relies on suitably selected steps along the cast ray. If the structure of the scene changes sufficiently away from the updated voxels, it would not affect the ray casting strategy up to a few marching steps. Moreover, storing the SDF values inside a texture would allow for fast and efficient sampling while avoiding too much cache misses. The proposed strategy is illustrated in figure \ref{fig:sparse-coding-sdf}
+In this project, we would like to extend this method to volumetric SDFs representations. To do so, we intend to create a coarse \textit{Sparse Voxel Octree} (SVO) with a small maximum depth where each end voxel in the tree (i.e. a voxel that has no children at lower levels) could be represented as a sparse coding of a pretrained dictionary of 3D volumetric textures that could act as samples of the SDF themselves. This structure would be particularly interesting as it would allow to edit some parts of the volume without having, in practice, to recompute all the values of the decomposition every time for all the voxels of the octree. Indeed, as sphere tracing relies on suitably selected steps along the cast ray. If the structure of the scene changes sufficiently away from the updated voxels, it would not affect the ray casting strategy up to a few marching steps. Moreover, storing the SDF values inside a texture would allow for fast and efficient sampling while avoiding too much cache misses. The proposed strategy is illustrated in figure \ref{fig:sparse-coding-sdf}.
 
-\begin{figure}
+\begin{figure*}[h]
     \centering
-    \includegraphics[width=0.4\textwidth]{figures/sparse-coding-sdf.png}
-    \caption{}
+    \includegraphics[width=0.8\textwidth]{figures/sparse-coding-sdf.png}
+    \caption{Proposed dictionary-based representation of the SDF}
     \label{fig:sparse-coding-sdf}
-\end{figure}
+\end{figure*}
 
 \subsection{Neural representations of SDFs}
 \label{ssec:neural-sdf}
-Recently, they have been a lot of attempt to represent SDFs as neural networks. 
+Recently, they have been a lot of attempts to represent SDFs as neural networks. For example, \textit{DeepSDF} introduced in \cite{Park_2019_CVPR} proposes to represent a SDF as a global learned neural network. However, in order to capture the full complexity and details of the scene, the architecture of the network must be sufficiently large and rely on a large amount of parameters. As a consequence, inference on such a network is demanding and, as such, cannot be used for realtime rendering.
+
+To address this issue, \cite{takikawa2021nglod} recently proposed to encode SDFs as latent representations learned by a small fixed neural network, namely a MLP with a single hidden layer of size $128$. These learned vectors are stored in a \textit{Sparse Voxel Octree} (SVO) and the SDF is sampled by summing the contributions of the features associated to each voxel across each level of the (SVO), applying trilinear interpolation in the sum and decoding it thanks to the aforementioned MLP.
+
+As part of this project, we would like to implement a similar solution with a MLP that can be evaluated directly in a \textit{shader}. Moreover, as the scene faces radical changes, we would like to try and dynamically update the parameters of the decoding MLP and testing the obtained result against existing solutions.
 
 \addcontentsline{toc}{section}{References}
 \bibliographystyle{plain}
