@@ -37,6 +37,9 @@
 \setlength{\parindent}{10pt}
 
 \usepackage{subcaption}
+\usepackage{caption}
+\DeclareCaptionType{equ}[][]
+\captionsetup[equ]{labelformat=empty}
 
 \setcounter{secnumdepth}{2}
 \setcounter{tocdepth}{2}
@@ -129,11 +132,31 @@ As of today, we have identified two directions that we would like to explore in 
 \subsection{Dictionary-based sampling of SDFs}
 \label{ssec:dictionary-sdf}
 
-Sparse coding and dictionary based structures have already proven to be very useful in other fields of computer graphics including 3D Modeling as presented in \cite{Lescoat:2018:3DDictSTAR}. However, to our knowledge, their extension for GPU-based rendering of signed distance field has not been tested yet. 
+Sparse coding and dictionary based structures have already proven to be very useful in other fields of computer graphics including 3D Modeling as presented in \cite{Lescoat:2018:3DDictSTAR}. However, to our knowledge, their extension for GPU-based rendering of signed distance field has not been tested yet. This motivates us to head towards this direction.
 
-Many challenges = how to prevent cache misses ?
+More precisely, at \textit{High Performance Programming 2021}, Kersten Schuster presented his work \cite{10.2312:hpg.20211284} on the compression and rendering of textured point clouds via sparse coding. The main idea behind the paper is to render splat textures of the point cloud as a sparse coding a learned dictionary, namely a linear combination of a small number of atoms in the dictionary as given in equation \ref{eq:sparse-coding}. This dictionary-based scheme is achieved by concurrently learning the dictionary using the k-SVD algorithm introduced in \cite{1710377} and deriving the sparse coding of each splat thanks to \textit{Orthogonal Matching Pursuit}.
 
-\subsection{Sparse coding}
+\begin{equ}[!ht]
+    \begin{equation}
+        y_i = \sum_{k=1}^{K_i}x_{i, k}d_{i, k}
+      \label{eq:sparse-coding}
+    \end{equation}
+  \caption{where $d_i$ is a sample from the dictionary and $K_i$ satisfies $K_i\leq K$}
+  \end{equ}
+
+% Add a 
+In this project, we would like to extend this method to volumetric SDFs representations. To do so, we intend to create a coarse \textit{Sparse Voxel Octree} (SVO) with a small maximum depth where each end voxel in the tree (i.e. a voxel that has no children at lower levels) could be represented as a sparse coding of a pretrained dictionary of 3D volumetric textures that could act as samples of the SDF themselves. This structure would be particularly interesting as it would allow to edit some parts of the volume without having, in practice, to recompute all the values of the decomposition every time for all the voxels of the octree. Indeed, as sphere tracing relies on suitably selected steps along the cast ray. If the structure of the scene changes sufficiently away from the updated voxels, it would not affect the ray casting strategy up to a few marching steps. Moreover, storing the SDF values inside a texture would allow for fast and efficient sampling while avoiding too much cache misses. The proposed strategy is illustrated in figure \ref{fig:sparse-coding-sdf}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.4\textwidth]{figures/sparse-coding-sdf.png}
+    \caption{}
+    \label{fig:sparse-coding-sdf}
+\end{figure}
+
+\subsection{Neural representations of SDFs}
+\label{ssec:neural-sdf}
+Recently, they have been a lot of attempt to represent SDFs as neural networks. 
 
 \addcontentsline{toc}{section}{References}
 \bibliographystyle{plain}
