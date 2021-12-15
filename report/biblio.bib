@@ -67,3 +67,32 @@
   year    = {2021},
   journal = {arXiv preprint arXiv:2101.10994}
 }
+
+@article{Hart1996SphereTA,
+  title   = {Sphere tracing: a geometric method for the antialiased ray tracing of implicit surfaces},
+  author  = {John C. Hart},
+  journal = {The Visual Computer},
+  year    = {1996},
+  volume  = {12},
+  pages   = {527-545}
+}
+
+@article{10.1145/2508363.2508374,
+  author     = {Nie\ss{}ner, Matthias and Zollh\"{o}fer, Michael and Izadi, Shahram and Stamminger, Marc},
+  title      = {Real-Time 3D Reconstruction at Scale Using Voxel Hashing},
+  year       = {2013},
+  issue_date = {November 2013},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {32},
+  number     = {6},
+  issn       = {0730-0301},
+  url        = {https://doi.org/10.1145/2508363.2508374},
+  doi        = {10.1145/2508363.2508374},
+  abstract   = {Online 3D reconstruction is gaining newfound interest due to the availability of real-time consumer depth cameras. The basic problem takes live overlapping depth maps as input and incrementally fuses these into a single 3D model. This is challenging particularly when real-time performance is desired without trading quality or scale. We contribute an online system for large and fine scale volumetric reconstruction based on a memory and speed efficient data structure. Our system uses a simple spatial hashing scheme that compresses space, and allows for real-time access and updates of implicit surface data, without the need for a regular or hierarchical grid data structure. Surface data is only stored densely where measurements are observed. Additionally, data can be streamed efficiently in or out of the hash table, allowing for further scalability during sensor motion. We show interactive reconstructions of a variety of scenes, reconstructing both fine-grained details and large scale environments. We illustrate how all parts of our pipeline from depth map pre-processing, camera pose estimation, depth map fusion, and surface rendering are performed at real-time rates on commodity graphics hardware. We conclude with a comparison to current state-of-the-art online systems, illustrating improved performance and reconstruction quality.},
+  journal    = {ACM Trans. Graph.},
+  month      = {nov},
+  articleno  = {169},
+  numpages   = {11},
+  keywords   = {scalable, data structure, GPU, real-time reconstruction}
+}
