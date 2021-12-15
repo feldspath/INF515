@@ -1,0 +1,71 @@
+\documentclass[10pt,a4paper,english, twocolumn]{article}
+
+\usepackage{graphicx} % This package draws images
+\usepackage{hyperref} 
+\usepackage{booktabs} % Essential for nice tabs (see https://people.inf.ethz.ch/markusp/teaching/guides/guide-tables.pdf)
+\usepackage{multirow}
+
+%page geometry
+\usepackage[margin=0.8in]{geometry}
+
+%encoding
+%--------------------------------------
+\usepackage[utf8]{inputenc} % input encoding
+\usepackage[T1]{fontenc} % output encoding
+%--------------------------------------
+
+%French-specific commands
+%--------------------------------------
+\usepackage{babel}
+\usepackage[autolanguage]{numprint}
+%--------------------------------------
+
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\addto\captionsenglish{% Replace "english" with the language you use
+  \renewcommand{\contentsname}%
+    {Table of contents}%
+}
+
+\usepackage{enumitem}
+
+\usepackage[ruled]{algorithm2e}
+\usepackage{parskip}
+\usepackage{indentfirst}
+\setlength{\parindent}{10pt}
+
+\usepackage{subcaption}
+
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+
+\title{\textbf{GPU-efficient and compressed representation of
+implicit surfaces for real-time rendering} \\ INF515}
+\author{Marius Debussche, \href{mailto:marius.debussche@polytechnique.edu}{marius.debussche@polytechnique.edu} \\ Clément Jambon, \href{mailto:clement.jambon@polytechnique.edu}{clement.jambon@polytechnique.edu} \\ Supervised by Tamy Boubekeur}
+
+\begin{document}
+
+
+\maketitle
+
+\section{Introduction}
+
+\section{State of the art}
+Initially render full signed distance fields but pb of context in the shader => rendering it as a texture
+DD2018: Sebastian Aaltonen - GPU based clay simulation and ray tracing tech in Claybook
+
+Sparse coding and dictionary based structures have already proven to be very useful in other fields of computer graphics including 3D Modeling as presented in \cite{Lescoat:2018:3DDictSTAR}. However, to our knowledge, their extension for GPU-based rendering of signed distance field has not been tested yet. Many challenges = how to prevent cache misses ?
+
+Efficient representations in memory include 
+
+\section{Current work}
+\section{Future directions and objectives}
+\subsection{Sparse coding}
+
+\addcontentsline{toc}{section}{References}
+\bibliographystyle{plain}
+\bibliography{biblio}
+
+\end{document}
