@@ -77,32 +77,32 @@ As a first preliminary work, we decided to implement a full sphere tracing pipel
     \label{fig:sphere-tracing}
 \end{figure}
 
-As can be seen on image \ref{fig:sphere-tracing}, the obtained resolution is particularly satisfactory and implies not artefacts as would be observed in conventional rasterization pipelines with a mesh of a sphere. More interestingly, with only a few additional lines of code in the fragment shader, we can recast a ray in the direction of a point source of light and perform Phong shading as shown in figure \ref{sfig:sphere-tracing2}.
+As can be seen on image \ref{fig:sphere-tracing}, the obtained resolution is perfect and implies no artefacts as would be observed in conventional rasterization pipelines with a mesh of a sphere. More interestingly, with only a few additional lines of code in the fragment shader, we can recast a ray in the direction of a point source of light and perform Phong shading as shown in figure \ref{sfig:sphere-tracing2}.
 
-However, we quicky faced a major hindrance in our exploration of SDF rendering. As they are run on the GPU, fragment shaders have strong constraints on the \textit{uniform} values that can be shared and updated between the "client", namely the CPU processing all the transformations of the scene and its inputs, and the "server", namely the GPU whose behaviour is controlled by shaders that being executed in a very parallelized fashion have a very restrictive way of exchanging information. More precisely, if we want to add reflections of other objects, shadows induced by various obstructing objects, take into account multiple reflexions to render soft shadows or add a growing number of lights in the scene, we need to pass all these information to the context of the shader which becomes clearly intractable as the scene grows in complexity. As a consequence, except for single shot and handcrafted scenes as can be found on \textit{Shadertoy}\footnote{\url{https://www.shadertoy.com/}}, this approach does not scale to a modular and generic editing tool as we envisioned to do.
+However, we quickly faced a major hindrance in our exploration of SDF rendering. As they are run on the GPU, fragment shaders have strong constraints on the \textit{uniform} values that can be shared and updated between the "client", namely the CPU processing all the transformations of the scene and its inputs, and the "server", namely the GPU whose behaviour is controlled by shaders that being executed in a very parallelized fashion have a very restrictive way of exchanging information. More precisely, if we want to add reflections of other objects, shadows induced by various obstructing objects, take into account multiple reflexions to render soft shadows or add a growing number of lights in the scene, we need to pass all these information to the context of the shader which becomes clearly intractable as the scene grows in complexity. As a consequence, except for single shot and handcrafted scenes as can be found on \textit{Shadertoy}\footnote{\url{https://www.shadertoy.com/}}, this approach does not scale to a modular and generic editing tool as we envisioned to do.
 
 Following a talk given by Sebastian Aaltonen at the Advanced Graphics Techniques Tutorial of GDC 2018 and entitled \textit{GPU-Based Clay Simulation and Ray-Tracing Tech in 'Claybook'}\footnote{\url{https://www.gdcvault.com/play/1025316/Advanced-Graphics-Techniques-Tutorial-GPU}}, we decided to turn to discretized versions of SDFs represented as volume textures (i.e 3D texture) and generated in \textit{compute shaders}.
 
 \textit{Compute shaders} are not part of the regular rendering pipeline but allow to perform arbitrary operations on the GPU, for example generate textures on the fly in the GPU. More interestingly, \textit{compute shader} jobs are dispatched according to cartesian coordinates such as $x$, $y$ and $z$ and are thus, if properly designed, particularly suited to the task of handling volume textures. Nevertheless, a major constraint due to the GPU architecture is the notion of \textit{shared memory} and \textit{cache misses} that requires to devise proper workaround and heuristics. In his talk, Sebastian Aaltonen describes how he and his teammates generate a SDF texture from a set of predefined "brushes" (similar to primitives) and operations on such instanciated brushes (e.g.\ union, morphing, etc).
 
-In order to get our hands with these notions, we decided to implement our own SDF sampling strategy and resulting rendering pipeline. To this extent, we, once again, decided to sample the SDF of simple primitives such as the sphere on a limited amount of bits. More precisely, following Aaltonen's work, we chose to encode the full SDF in samples of $4$ bits and according to a regular 3D grid bounding the primitive. This challenged us in the sense that we needed to properly discretize the sampled values of the distance field and the resolution needed to be wisely chosen. As can be seen in figure \ref{fig:sampled-sphere}, finer sampling resolutions of the SDF give finer visual renderings of the sphere.
+In order to get our hands with these notions, we decided to implement our own SDF sampling strategy and resulting rendering pipeline. To this extent, we, once again, decided to sample the SDF of simple primitives such as the sphere on a limited amount of bits. More precisely, following Aaltonen's work, we chose to encode the full SDF in samples of $8$ bits and according to a regular 3D grid bounding the primitive. This challenged us in the sense that we needed to properly discretize the sampled values of the distance field and the resolution needed to be wisely chosen. As can be seen in figure \ref{fig:sampled-sphere}, finer sampling resolutions of the SDF give finer visual renderings of the sphere.
 
 \begin{figure}
-    \begin{subfigure}{.33\linewidth}
+    \begin{subfigure}{.3\linewidth}
         \centering
-        %\includegraphics[width=.9\linewidth]{figures/sphere-tracing1.png}
+        \includegraphics[width=.9\linewidth]{figures/discretized_sdf_32.JPG}
         \caption{}
         \label{sfig:sampled-sphere1}
-    \end{subfigure}%
-    \begin{subfigure}{.33\linewidth}
+    \end{subfigure}
+    \begin{subfigure}{.3\linewidth}
         \centering
-        %\includegraphics[width=.9\linewidth]{figures/sphere-tracing2.png}
+        \includegraphics[width=.9\linewidth]{figures/discretized_sdf_128.JPG}
         \caption{}
         \label{sfig:sampled-sphere2}
     \end{subfigure}
-    \begin{subfigure}{.33\linewidth}
+    \begin{subfigure}{.3\linewidth}
         \centering
-        %\includegraphics[width=.9\linewidth]{figures/sphere-tracing2.png}
+        \includegraphics[width=.9\linewidth]{figures/discretized_sdf_512.JPG}
         \caption{}
         \label{sfig:sampled-sphere3}
     \end{subfigure}
