@@ -14,6 +14,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "block.hpp"
+
 // ************************************ //
 //          Global variables
 // ************************************ //
@@ -25,90 +27,6 @@ auto sphere_position = glm::vec3(0.0f, 0.0f, -2.0f);
 auto sphere_radius = 0.2f;
 
 float sdf(glm::vec3 position) { return glm::distance(position, sphere_position) - sphere_radius; }
-
-class Block {
-private:
-    std::vector<GLubyte> texture_bytes;
-    GLuint texture_id;
-    float block_size;
-    glm::vec3 origin;
-    int nb_texels;
-
-public:
-    Block() : texture_id{0}, block_size{0.0f} {}
-
-    Block(glm::vec3 origin, float block_size, int nb_texels) : texture_id(-1) {
-        this->block_size = block_size;
-        this->origin = origin;
-        this->nb_texels = nb_texels;
-    }
-
-    const GLubyte *data() const { return texture_bytes.data(); }
-
-    void generate_texture() {
-        auto texel_size = block_size / nb_texels;
-        auto sample_offset = glm::vec3(1.0f) * (texel_size / 2);
-
-        texture_bytes.resize(nb_texels * nb_texels * nb_texels);
-        auto it = texture_bytes.begin();
-
-        for (int z = 0; z < nb_texels; ++z) {
-            for (int y = 0; y < nb_texels; ++y) {
-                for (int x = 0; x < nb_texels; ++x) {
-                    auto position = glm::vec3(x, y, z) * texel_size + origin + sample_offset;
-                    float distance = sdf(position);
-                    distance = std::clamp(distance, -4.0f, 4.0f) + 4.0f;
-                    distance *= 32.0f;
-                    *it++ = static_cast<GLubyte>(distance);
-                }
-            }
-        }
-    }
-
-    void send_texture() {
-
-        // Texture genration
-        glGenTextures(1, &texture_id);
-        glBindTexture(GL_TEXTURE_3D, texture_id);
-
-        // Send texture to GPU
-        glTexImage3D(GL_TEXTURE_3D, 0, GL_R8, nb_texels, nb_texels, nb_texels, 0, GL_RED,
-                     GL_UNSIGNED_BYTE, static_cast<const void *>(data()));
-
-        // Mipmap parameters
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_BASE_LEVEL, 0);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAX_LEVEL, 0);
-
-        // Filter parameters
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-        // Wrapping parameters
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-        float borderColor[] = {0.5f / 8.0f + 0.5f, 0.0f, 0.0f, 1.0f};
-        glTexParameterfv(GL_TEXTURE_3D, GL_TEXTURE_BORDER_COLOR, borderColor);
-
-        // Unbind texture
-        glBindTexture(GL_TEXTURE_3D, 0);
-    }
-
-    void bind_texture() { glBindTexture(GL_TEXTURE_3D, texture_id); }
-
-    void print_slice(int z) {
-        for (int y = 0; y < nb_texels; ++y) {
-            for (int x = 0; x < nb_texels; ++x) {
-                GLubyte discrete_dist =
-                    texture_bytes[z * nb_texels * nb_texels + y * nb_texels + x];
-                float distance = static_cast<float>(discrete_dist) / 32.0f - 4.0f;
-                std::cout << distance << '\t';
-            }
-            std::cout << '\n';
-        }
-    }
-};
 
 std::array<glm::vec3, 4> quad_primitive_vertices = {
     glm::vec3({-1.0f, -1.0f, 0.0f}), glm::vec3({-1.0f, 1.0f, 0.0f}), glm::vec3({1.0f, -1.0f, 0.0f}),
@@ -135,7 +53,7 @@ void draw_data(); // Drawing calls within the animation loop
 glm::vec3 block_origin = glm::vec3(-0.5f) + sphere_position;
 Block block;
 float volume_size = 1.0f;
-int nb_texels = 512;
+int nb_texels = 16;
 
 /** Main function, call the general functions and setup the animation loop */
 int main() {
@@ -205,10 +123,8 @@ void load_data() {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    block = Block(block_origin, volume_size, nb_texels);
-    block.generate_texture();
-    block.send_texture();
-    // block.print_slice(0);
+    block = Block(block_origin, volume_size, nb_texels, &sdf);
+    block.generate_textures();
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_FRONT);
@@ -221,7 +137,6 @@ void draw_data() {
     // Clear screen
     // ******************************** //
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-    // glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     double time = glfwGetTime();
@@ -234,7 +149,9 @@ void draw_data() {
     // glm::vec3 camera_center = {0.0f, 0.0f, (cos(time) + 1.0f)};
     glm::vec3 camera_center = {0.0f, 0.0f, 1.0f};
 
-    glm::vec3 light_pos = {10.0f * sin(time), 0.0f, 10.0f * cos(time)};
+    //glm::vec3 light_pos = {10.0f * sin(time), 0.0f, 10.0f * cos(time)};
+    float theta = 5.2f;
+    glm::vec3 light_pos = {10.0f * sin(5.2f), 0.0f, 10.0f * cos(5.2f)};
 
     glUseProgram(shader_program);
     glBindVertexArray(vao);
@@ -248,9 +165,11 @@ void draw_data() {
     glUniform1i(glGetUniformLocation(shader_program, "height"), 600);
     glUniform3fv(glGetUniformLocation(shader_program, "camera_center"), 1, &camera_center[0]);
     glUniform3fv(glGetUniformLocation(shader_program, "light_pos"), 1, &light_pos[0]);
+    glUniform1i(glGetUniformLocation(shader_program, "sdf_texture"), 0);
+    glUniform1i(glGetUniformLocation(shader_program, "normals_texture"), 1);
 
     // Pass texture to shader
-    block.bind_texture();
+    block.bind_textures();
 
     glUniform3fv(glGetUniformLocation(shader_program, "volume_origin"), 1, &block_origin[0]);
     glUniform1f(glGetUniformLocation(shader_program, "volume_size"), volume_size);
